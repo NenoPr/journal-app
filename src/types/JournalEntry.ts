@@ -3,4 +3,6 @@ export interface JournalEntry {
   title: string;
   content: string;
   createdAt: string;
+  updatedAt: string;
+  is_favourite: boolean;
 }
