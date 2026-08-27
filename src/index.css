@@ -63,6 +63,7 @@
   background-size: cover;
   background-blend-mode: soft-light;
   background-color: #2b2b2b;
+  background-blend-mode: exclusion;
 }
 
 body {

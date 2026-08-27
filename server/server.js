@@ -18,7 +18,7 @@ app.get("/api/journal/:id", async (req, res) => {
     const { id } = req.params;
 
     const result = await pool.query(
-      `SELECT id, title, content, created_at, updated_at"
+      `SELECT id, title, content, is_favourite, created_at, updated_at
        FROM journal_entries
        WHERE id = $1`,
       [id],
@@ -71,7 +71,7 @@ app.post("/api/journal", async (req, res) => {
     const result = await pool.query(
       `INSERT INTO journal_entries (title, content)
        VALUES ($1, $2)
-       RETURNING id, title, content,
+       RETURNING id, title, content, is_favourite,
                  created_at,
                  updated_at`,
       [title, content],
@@ -91,10 +91,16 @@ app.put("/api/journal/:id", async (req, res) => {
     const { id } = req.params;
     const { title, content, is_favourite } = req.body;
 
-    if (typeof title !== "string" || typeof content !== "string") {
+    if (
+      typeof title !== "string" ||
+      typeof content !== "string" ||
+      typeof is_favourite !== "boolean"
+    ) {
       return res
         .status(400)
-        .json({ error: "Title and content must be strings" });
+        .json({
+          error: "Title and content must be strings and is_favourite a boolean",
+        });
     }
 
     const result = await pool.query(

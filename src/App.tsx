@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import type { JournalEntry } from "./types/JournalEntry";
 import "./App.css";
-import Star from "./assets/react.svg";
 
 const API_URL = "http://localhost:3000/api/journal";
 
@@ -9,10 +8,13 @@ function App() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [entryOpen, setEntryOpen] = useState<boolean>(false);
+  const [openEntryId, setOpenEntryId] = useState<string>("");
   const [entryText, setEntryText] = useState<string>("");
   const [entryTitle, setEntryTitle] = useState<string>("");
+  const [entryFavourite, setEntryFavourite] = useState<boolean>(false);
   const [entryDeleteId, setEntryDeleteId] = useState<string | null>(null);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [entryEdit, setEntryEdit] = useState<boolean>(false);
 
   useEffect(() => {
     const loadEntries = async () => {
@@ -61,6 +63,8 @@ function App() {
       if (entry.id === id) {
         setEntryText(entry.content);
         setEntryTitle(entry.title);
+        setOpenEntryId(entry.id);
+        setEntryFavourite(entry.is_favourite);
         setEntryOpen(true);
       }
     });
@@ -85,7 +89,7 @@ function App() {
     content: string,
     is_favourite: boolean,
   ) => {
-    const response = await fetch(`http://localhost:3000/api/journal/${id}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -101,8 +105,7 @@ function App() {
       throw new Error("Failed to update entry");
     }
 
-    const updatedEntry = await response.json();
-    console.log(updatedEntry);
+    const updatedEntry: JournalEntry = await response.json();
 
     setEntries((currentEntries) =>
       currentEntries.map((entry) =>
@@ -126,7 +129,7 @@ function App() {
       <br />
 
       <textarea
-        className="entry-input"
+        className="entry-textarea"
         placeholder="Write your thoughts..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
@@ -146,20 +149,70 @@ function App() {
 
       <hr />
 
-      <ul>
+      <div className="entries-main">
         {entryOpen ? (
-          <div className="entry-open">
-            <h2>{entryTitle}</h2>
-            <hr />
-            <p>{entryText}</p>
-            <hr />
-            <button
-              className="entry-button"
-              onClick={() => setEntryOpen(false)}
-            >
-              Back
-            </button>
-          </div>
+          entryEdit ? (
+            <div className="entry-open">
+              <input
+                className="edit-entry-input"
+                value={entryTitle}
+                onChange={(e) => setEntryTitle(e.target.value)}
+              ></input>
+              <hr />
+              <textarea
+                className="edit-entry-textarea"
+                onChange={(e) => setEntryText(e.target.value)}
+                value={entryText}
+              ></textarea>
+              <hr />
+              <div className="buttons">
+                <button
+                  className="entry-button"
+                  onClick={() =>
+                    updateEntry(
+                      openEntryId,
+                      entryTitle,
+                      entryText,
+                      entryFavourite,
+                    )
+                      .then(() => setEntryEdit(false))
+                      .catch(console.error)
+                  }
+                >
+                  Save
+                </button>
+                <button
+                  className="entry-button"
+                  onClick={() => {
+                    setEntryEdit(false);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="entry-open">
+              <h2>{entryTitle}</h2>
+              <hr />
+              <p className="entry-text-open-read">{entryText}</p>
+              <hr />
+              <div className="buttons">
+                <button
+                  className="entry-button"
+                  onClick={() => setEntryEdit(true)}
+                >
+                  Edit
+                </button>
+                <button
+                  className="entry-button"
+                  onClick={() => setEntryOpen(false)}
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )
         ) : (
           entries.map((entry) => (
             <div key={entry.id} className="entry">
@@ -179,8 +232,8 @@ function App() {
                     entry.id,
                     entry.title,
                     entry.content,
-                    (entry.is_favourite = !entry.is_favourite),
-                  )
+                    !entry.is_favourite,
+                  ).catch(console.error)
                 }
               >
                 {entry.is_favourite ? (
@@ -238,7 +291,7 @@ function App() {
             </div>
           ))
         )}
-      </ul>
+      </div>
     </div>
   );
 }
