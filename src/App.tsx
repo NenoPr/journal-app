@@ -15,6 +15,9 @@ function App() {
   const [entryDeleteId, setEntryDeleteId] = useState<string | null>(null);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [entryEdit, setEntryEdit] = useState<boolean>(false);
+  const [charCounter, setCharCounter] = useState<number>(0);
+  const [showFavorites, setShowFavorites] = useState<boolean>(false);
+  const [showNewest, setShowNewest] = useState<boolean>(true);
 
   useEffect(() => {
     const loadEntries = async () => {
@@ -56,6 +59,7 @@ function App() {
     setEntries((currentEntries) => [entry, ...currentEntries]);
     setTitle("");
     setContent("");
+    setCharCounter(0);
   };
 
   const openJournalEntry = (id: string) => {
@@ -114,6 +118,43 @@ function App() {
     );
   };
 
+  const handleJournalWriting = (e) => {
+    if (e.target.value.length <= 1000) {
+      setContent(e.target.value);
+      setCharCounter(e.target.value.length);
+    }
+  };
+
+  // let visibleEntries = [...entries];
+
+  // if (showFavorites) {
+  //   visibleEntries = visibleEntries.filter(
+  //     (entry) => entry.is_favourite
+  //   );
+  // }
+
+  // visibleEntries.sort((a, b) => {
+  //   if (newestFirst) {
+  //     return (
+  //       new Date(b.created_at).getTime() -
+  //       new Date(a.created_at).getTime()
+  //     );
+  //   }
+
+  //   return (
+  //     new Date(a.created_at).getTime() -
+  //     new Date(b.created_at).getTime()
+  //   );
+  // });
+
+  const visibleEntries = entries
+    .filter((entry) => !showFavorites || entry.is_favourite)
+    .sort((a, b) =>
+      showNewest
+        ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        : new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Journal</h1>
@@ -132,13 +173,16 @@ function App() {
         className="entry-textarea"
         placeholder="Write your thoughts..."
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={(e) => {
+          handleJournalWriting(e);
+        }}
         rows={15}
         cols={100}
       />
-
-      <br />
-      <br />
+      <div className="text-white mb-5">
+        {charCounter}/1000{" "}
+        {charCounter > 999 ? "Character limit reached" : "characters written."}
+      </div>
 
       <button
         onClick={() => saveEntry().catch(console.error)}
@@ -147,7 +191,28 @@ function App() {
         Save Entry
       </button>
 
-      <hr />
+      <hr className="mb-5" />
+
+      <div className="flex gap-2">
+        <button
+          className={`text-white border-2 w-fit justify-self-start mb-5 rounded-2xl p-2 ${showNewest ? "bg-black" : "bg-transparent"}`}
+          onClick={() => setShowNewest(true)}
+        >
+          Newest
+        </button>
+        <button
+          className={`text-white border-2 w-fit justify-self-start mb-5 rounded-2xl p-2 ${showNewest ? "bg-transparent" : "bg-black"}`}
+          onClick={() => setShowNewest(false)}
+        >
+          Oldest
+        </button>
+        <button
+          onClick={() => setShowFavorites((prev) => !prev)}
+          className={`text-white border-2 w-fit justify-self-start mb-5 rounded-2xl p-2 ${showFavorites ? "bg-black" : "bg-transparent"}`}
+        >
+          Favorites
+        </button>
+      </div>
 
       <div className="entries-main">
         {entryOpen ? (
@@ -214,7 +279,7 @@ function App() {
             </div>
           )
         ) : (
-          entries.map((entry) => (
+          visibleEntries.map((entry) => (
             <div key={entry.id} className="entry">
               <strong
                 onClick={() => openJournalEntry(entry.id)}

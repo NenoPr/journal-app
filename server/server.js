@@ -96,11 +96,9 @@ app.put("/api/journal/:id", async (req, res) => {
       typeof content !== "string" ||
       typeof is_favourite !== "boolean"
     ) {
-      return res
-        .status(400)
-        .json({
-          error: "Title and content must be strings and is_favourite a boolean",
-        });
+      return res.status(400).json({
+        error: "Title and content must be strings and is_favourite a boolean",
+      });
     }
 
     const result = await pool.query(

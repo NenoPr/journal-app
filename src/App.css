@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 .cursor-pointer:hover {
   cursor: pointer;
 }
@@ -32,6 +34,8 @@ button {
   background-color: rgba(255, 255, 255, 0.338);
   background-blend-mode: saturation;
   width: 20%;
+  color: black;
+  font-size: 1.1rem;
 }
 
 .entry-textarea {
@@ -44,6 +48,7 @@ button {
   background-color: rgba(255, 255, 255, 0.338);
   background-blend-mode: saturation;
   width: 60%;
+  color: black;
 }
 
 h1 {
@@ -54,7 +59,10 @@ h1 {
   font-size: 1.25rem;
   padding: 0.25rem;
   border: 0.1rem solid black;
-  border-radius: 0.2rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  color: black;
+  background-color: white;
 }
 
 input::placeholder {
